@@ -1,0 +1,50 @@
+body {
+  width: 300px;
+  padding: 15px;
+  font-family: Geist, sans-serif;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  display: none;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 14px;
+  display: none;
+}
+
+.chunk-calculator {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+  display: none;
+}
+
+button {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #3367d6;
+}
+
+.loading {
+  display: none;
+  margin-top: 10px;
+}

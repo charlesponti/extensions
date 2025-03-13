@@ -1,0 +1,32 @@
+{
+	"manifest_version": 3,
+	"name": "Uber Eats Tracker",
+	"version": "2.0",
+	"description": "Tracks your Uber Eats spending.",
+	"permissions": ["storage", "tabs", "scripting"],
+	"host_permissions": ["https://www.ubereats.com/orders"],
+	"action": {
+		"default_popup": "src/popup.html",
+		"default_icon": {
+			"16": "icons/icon16.png",
+			"48": "icons/icon48.png",
+			"128": "icons/icon128.png"
+		}
+	},
+	"background": {
+		"service_worker": "src/background.ts",
+		"type": "module"
+	},
+	"content_scripts": [
+		{
+			"matches": ["https://www.ubereats.com/orders"],
+			"js": ["src/content.ts"],
+			"run_at": "document_end"
+		}
+	],
+	"icons": {
+		"16": "icons/icon16.png",
+		"48": "icons/icon48.png",
+		"128": "icons/icon128.png"
+	}
+}
