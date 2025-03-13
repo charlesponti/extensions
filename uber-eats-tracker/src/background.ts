@@ -39,10 +39,11 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 	// Update scraping status
 	if (request.action === "scrapingStatus") {
 		scrapingStatus = request.status;
-		// Pass the status to popup
+		// Pass the status and error message to popup
 		sendMessageSafely({
 			action: "scrapingStatusUpdate",
 			status: request.status,
+			...(request.error && { error: request.error }),
 		});
 		return;
 	}

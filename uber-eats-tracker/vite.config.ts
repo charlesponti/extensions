@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
 	plugins: [
 		react(),
 		viteStaticCopy({
@@ -27,6 +27,8 @@ export default defineConfig({
 	],
 	build: {
 		outDir: "build",
+		minify: mode === "production",
+		sourcemap: mode !== "production",
 		rollupOptions: {
 			input: {
 				main: "./index.html", // Corrected popup HTML path
@@ -37,11 +39,14 @@ export default defineConfig({
 			output: {
 				entryFileNames: (chunkInfo) => {
 					return chunkInfo.name === "popup"
-						? "assets/[name]-[hash].js"
+						? `assets/${mode === "production" ? "[name]-[hash].js" : "[name].js"}`
 						: "[name].js";
 				},
-				chunkFileNames: "assets/[name]-[hash].js",
+				chunkFileNames:
+					mode === "production"
+						? "assets/[name]-[hash].js"
+						: "assets/[name].js",
 			},
 		},
 	},
-});
+}));

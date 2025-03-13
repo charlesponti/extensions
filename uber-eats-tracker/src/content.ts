@@ -3,87 +3,90 @@
 import type { UberEatsData } from "./types";
 
 // Helper functions for scraping
-async function findChildMatchingQuery(
-	element: Element,
-	queryFn: (element: Element) => Promise<boolean>,
-) {
-	const results: Element[] = [];
-	const children = element.querySelectorAll("*");
+function findMatchingChild(
+	parent: HTMLElement,
+	queryFn: (element: HTMLElement) => boolean,
+): HTMLElement[] {
+	const results = new Set<HTMLElement>();
 
-	for (const child of children) {
-		try {
-			if (await queryFn(child)) {
-				results.push(child);
+	function traverse(element: HTMLElement) {
+		// Skip if this is not an element node
+		if (element.nodeType !== Node.ELEMENT_NODE) return;
+
+		// Check if the current element matches the query
+		if (queryFn(element)) {
+			// If the element has matching children
+			let hasMatchingChildren = false;
+			for (const child of element.children) {
+				if (queryFn(child as HTMLElement)) {
+					hasMatchingChildren = true;
+					break;
+				}
 			}
-		} catch (error) {
-			console.error("Error in query function:", error);
+
+			if (!hasMatchingChildren) {
+				results.add(element);
+			}
+		}
+
+		// We have to traverse all the element's children
+		// because matching elements could be in any branch of DOM
+		for (const child of element.children) {
+			traverse(child as HTMLElement);
 		}
 	}
 
-	return results;
+	traverse(parent);
+	return Array.from(results);
 }
 
 async function scrapeUberEatsOrders() {
-	console.log("Scraping Uber Eats orders...");
 	const main = document.querySelector("main");
-
 	if (!main) {
-		console.error("Could not find main element");
-		return {
-			total: 0,
-			restaurants: {},
-			orders: [],
-			error: "Could not find main element",
-		};
+		throw new Error("Main element not found");
 	}
 
-	const orders = await findChildMatchingQuery(main, async (e) => {
-		const t = e.textContent;
-		const href = e.getAttribute("href");
-
-		if (!t || !href) return false;
-
-		return (
-			Boolean(t.match(/\$\d+\.\d+/)) &&
-			Boolean(t.includes("items for")) &&
-			Boolean(href.includes("/store"))
+	while (true) {
+		const showBtn = Array.from(document.querySelectorAll("button")).find(
+			(e) => e.textContent === "Show more",
 		);
-	});
+		if (!showBtn) break;
+		showBtn.click();
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+	}
 
-	console.log("Found orders:", orders);
+	// Find all the order elements
+	const orders = findMatchingChild(main, (e) => {
+		return (
+			/\d+\s(item|items)\s+for\s\$\d+\.\d+/.test(e.textContent || "") &&
+			e.querySelector("a[href*='/store']") !== null
+		);
+	}) as HTMLElement[];
+
 	const result: UberEatsData = {
 		total: 0,
 		restaurants: {},
 		orders: [],
 	};
 
-	for (const element of orders) {
-		const restaurantLink = element.querySelector('a[href*="/store"]');
-		if (!restaurantLink) continue;
-
-		const restaurant = restaurantLink.textContent;
-		if (!restaurant) continue;
-
-		const infoElement = await findChildMatchingQuery(element, async (e) => {
-			const text = e.textContent;
-			return Boolean(text?.includes("items for"));
-		});
-
-		if (!infoElement.length) continue;
-
-		const infoText = infoElement[0].textContent;
-		const info = infoText
-			?.split("•")
+	for (const order of orders) {
+		const restaurant = order.querySelector("a[href*='/store']")?.textContent;
+		const info = Array.from(order.querySelectorAll("*"))
+			.find((el) => (el.textContent?.indexOf("items for") ?? -1) >= 0)
+			?.textContent?.split("•")
 			.map((s) => s.trim())
 			.slice(0, 2);
 
-		if (!info) continue;
+		if (!info || !restaurant) {
+			console.error("Error parsing order:", order);
+			continue;
+		}
 
-		const itemsAndPrice = info[0].split(" items for ");
-		const numOfItems = Number(itemsAndPrice[0]);
-		const price = Number.parseFloat(itemsAndPrice[1].slice(1));
+		console.log({ info });
+		const [itemsAndPrice, date] = info;
+		const [numOfItems, priceText] = itemsAndPrice.split(" items for ");
+		const price = Number.parseFloat(priceText.slice(1));
 
-		// Update result object
 		result.total += price;
 
 		if (result.restaurants[restaurant]) {
@@ -95,13 +98,12 @@ async function scrapeUberEatsOrders() {
 
 		result.orders.push({
 			restaurant,
-			numOfItems,
-			price: itemsAndPrice[1],
-			date: info[1],
+			numOfItems: Number(numOfItems),
+			price: priceText,
+			date,
 		});
 	}
 
-	console.log({ main, orders, result });
 	return result;
 }
 
@@ -151,8 +153,14 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 				chrome.runtime.sendMessage({ action: "saveResults", data });
 				sendResponse({ success: true, data });
 			} catch (error) {
-				console.error("Scraping error:", error);
-				sendResponse({ success: false, error: String(error) });
+				const errorMessage =
+					error instanceof Error ? error.message : String(error);
+				chrome.runtime.sendMessage({
+					action: "scrapingStatus",
+					status: "error",
+					error: errorMessage,
+				});
+				sendResponse({ success: false, error: errorMessage });
 			}
 		})();
 		return true; // Required for async sendResponse

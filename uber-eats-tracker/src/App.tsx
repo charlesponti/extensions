@@ -273,7 +273,7 @@ function App() {
 	return (
 		<div className="uber-eats-tracker-app">
 			<div>
-				<h1>Uber Eats Tracker 2</h1>
+				<h1>Uber Eats Tracker</h1>
 			</div>
 
 			<div className="controls">
