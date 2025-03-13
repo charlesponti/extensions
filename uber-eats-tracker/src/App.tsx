@@ -58,12 +58,25 @@ function RestaurantsList({ restaurants }: RestaurantsListProps) {
 	);
 
 	return (
-		<div className="restaurants-container">
+		<div className="grid gap-4 p-4 max-w-2xl mx-auto">
 			{sortedRestaurants.map(([restaurant, info]) => (
-				<div key={restaurant} className="restaurant-item">
-					<strong>{restaurant}</strong>
-					<div>Visits: {info.visits}</div>
-					<div>Total spent: ${info.total.toFixed(2)}</div>
+				<div
+					key={restaurant}
+					className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow"
+				>
+					<div className="card-body p-4">
+						<h3 className="card-title text-lg font-bold text-primary">
+							{restaurant}
+						</h3>
+						<div className="flex justify-between items-center mt-2">
+							<div className="badge badge-secondary badge-lg">
+								{info.visits} {info.visits === 1 ? "visit" : "visits"}
+							</div>
+							<div className="text-xl font-semibold text-accent">
+								${info.total.toFixed(2)}
+							</div>
+						</div>
+					</div>
 				</div>
 			))}
 		</div>
@@ -80,14 +93,32 @@ function OrdersList({ orders }: OrdersListProps) {
 	);
 
 	return (
-		<div className="orders-container">
+		<div className="grid gap-4 p-4 max-w-2xl mx-auto">
 			{sortedOrders.map((order) => (
-				<div key={`${order.date}`} className="restaurant-item">
-					<strong>{order.restaurant}</strong>
-					<div>
-						{order.numOfItems} items for {order.price}
+				<div
+					key={`${order.date}`}
+					className="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow"
+				>
+					<div className="card-body p-4">
+						<div className="flex justify-between items-start">
+							<h3 className="card-title text-lg font-bold text-primary">
+								{order.restaurant}
+							</h3>
+							<div className="badge badge-primary">{order.price}</div>
+						</div>
+						<div className="flex justify-between items-center mt-2">
+							<div className="text-base-content/70">
+								{order.numOfItems} {order.numOfItems === 1 ? "item" : "items"}
+							</div>
+							<div className="text-sm text-base-content/60">
+								{new Date(order.date).toLocaleDateString("en-US", {
+									year: "numeric",
+									month: "short",
+									day: "numeric",
+								})}
+							</div>
+						</div>
 					</div>
-					<div>Date: {order.date}</div>
 				</div>
 			))}
 		</div>
@@ -114,24 +145,43 @@ function ResultsSummary({ data }: ResultsSummaryProps) {
 	}
 
 	return (
-		<div className="summary-container">
-			<div>
-				Total spent: <strong>${data.total.toFixed(2)}</strong>
-			</div>
-			<div>
-				Total orders: <strong>{data.orders.length}</strong>
-			</div>
-			<div>
-				Most visited restaurant:{" "}
-				<strong>
-					{mostVisited.name} ({mostVisited.visits} visits)
-				</strong>
-			</div>
-			<div>
-				Highest spend restaurant:{" "}
-				<strong>
-					{highestSpend.name} (${highestSpend.total.toFixed(2)})
-				</strong>
+		<div className="card bg-base-100 shadow-xl p-6 max-w-2xl mx-auto">
+			<div className="space-y-6">
+				<div className="stat bg-base-200 rounded-box p-4">
+					<div className="stat-title text-base-content/60">Total Spent</div>
+					<div className="stat-value text-primary">
+						${data.total.toFixed(2)}
+					</div>
+				</div>
+
+				<div className="stat bg-base-200 rounded-box p-4">
+					<div className="stat-title text-base-content/60">Total Orders</div>
+					<div className="stat-value text-secondary">{data.orders.length}</div>
+				</div>
+
+				<div className="stat bg-base-200 rounded-box p-4">
+					<div className="stat-title text-base-content/60">
+						Most Visited Restaurant
+					</div>
+					<div className="stat-value text-accent text-2xl">
+						{mostVisited.name}
+					</div>
+					<div className="stat-desc text-base-content/70 text-lg mt-1">
+						{mostVisited.visits} visits
+					</div>
+				</div>
+
+				<div className="stat bg-base-200 rounded-box p-4">
+					<div className="stat-title text-base-content/60">
+						Highest Spend Restaurant
+					</div>
+					<div className="stat-value text-accent text-2xl">
+						{highestSpend.name}
+					</div>
+					<div className="stat-desc text-base-content/70 text-lg mt-1">
+						${highestSpend.total.toFixed(2)}
+					</div>
+				</div>
 			</div>
 		</div>
 	);
@@ -300,7 +350,7 @@ function App() {
 
 			{data && !loading && !error && (
 				<div className="results-container">
-					<div className="tabs">
+					<div className="tabs tabs-border">
 						<button
 							type="button"
 							className={activeTab === "summary" ? "tab active" : "tab"}
@@ -325,21 +375,11 @@ function App() {
 					</div>
 
 					<div className="tab-content-container">
-						{activeTab === "summary" && (
-							<div className="tab-content active">
-								<ResultsSummary data={data} />
-							</div>
-						)}
+						{activeTab === "summary" && <ResultsSummary data={data} />}
 						{activeTab === "restaurants" && (
-							<div className="tab-content active">
-								<RestaurantsList restaurants={data.restaurants} />
-							</div>
+							<RestaurantsList restaurants={data.restaurants} />
 						)}
-						{activeTab === "orders" && (
-							<div className="tab-content active">
-								<OrdersList orders={data.orders} />
-							</div>
-						)}
+						{activeTab === "orders" && <OrdersList orders={data.orders} />}
 					</div>
 				</div>
 			)}
