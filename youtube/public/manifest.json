@@ -1,0 +1,19 @@
+{
+	"manifest_version": 3,
+	"name": "YouTube Playlist Timer",
+	"version": "1.0",
+	"description": "Calculates the total time of a YouTube playlist.",
+	"action": {
+		"default_popup": "index.html"
+	},
+	"permissions": ["activeTab", "scripting"],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"content_scripts": [
+		{
+			"matches": ["https://www.youtube.com/*"],
+			"js": ["content.js"]
+		}
+	]
+}

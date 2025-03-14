@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Playlist Timer</title>
+  
+  <!-- Geist Sans and Mono fonts -->
+  <style>
+    /* Geist Sans */
+    @font-face {
+      font-family: 'Geist Sans';
+      src: url('https://cdn.jsdelivr.net/npm/geist-font@latest/geist-sans/GeistVF.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    /* Geist Mono */
+    @font-face {
+      font-family: 'Geist Mono';
+      src: url('https://cdn.jsdelivr.net/npm/geist-font@latest/geist-mono/GeistMonoVF.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    :root {
+      --font-sans: 'Geist Sans', system-ui, sans-serif;
+      --font-mono: 'Geist Mono', monospace;
+    }
+    
+    html {
+      font-family: var(--font-sans);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <!-- The actual script tag will be injected by Vite during build -->
+  <script type="module" src="./src/popup.tsx"></script>
+</body>
+
+</html>
